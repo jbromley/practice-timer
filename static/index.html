@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Practice Timer</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="shell top-inner">
+      <a class="brand" href="/">Practice Timer</a>
+      <nav aria-label="Main navigation">
+        <button id="practice-tab" type="button" aria-current="page">Practice</button>
+        <button id="history-tab" type="button">History</button>
+        <button id="theme-toggle" type="button" aria-label="Dark mode" title="Dark mode">
+          <span class="theme-sun" aria-hidden="true">☀︎</span>
+          <span class="theme-moon" aria-hidden="true">☾</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+  <main class="shell">
+    <p id="notice" class="notice" role="status" hidden></p>
+    <section id="practice" hidden>
+      <div id="setup">
+        <h1 class="practice-heading">Plan your session</h1>
+        <form id="session-form">
+          <div class="card fields">
+            <div class="combo">
+              <label for="session-name">Session name</label>
+              <div class="combo-control">
+                <input id="session-name" required maxlength="120" autocomplete="off" placeholder="e.g. Evening practice">
+                <button type="button" popovertarget="template-choices" aria-label="Show session templates"></button>
+              </div>
+              <div id="template-choices" class="choices" popover aria-label="Session templates"></div>
+            </div>
+            <div class="combo">
+              <label for="instrument">Instrument</label>
+              <div class="combo-control">
+                <input id="instrument" required maxlength="120" autocomplete="off" placeholder="e.g. Saxophone">
+                <button type="button" popovertarget="instrument-choices" aria-label="Show saved instruments"></button>
+              </div>
+              <div id="instrument-choices" class="choices" popover aria-label="Saved instruments"></div>
+            </div>
+            <details id="session-description-disclosure">
+              <summary id="session-description-label">Session description <span class="optional">(optional)</span></summary>
+              <textarea id="session-description" aria-labelledby="session-description-label" rows="2" maxlength="2000"></textarea>
+            </details>
+            <div class="session-summary">
+              <div class="planned">
+                <label for="planned-total">Total time</label>
+                <output id="planned-total">0 min</output>
+              </div>
+              <p id="template-created" class="muted">Creation data N/A</p>
+            </div>
+          </div>
+          <div class="heading section-heading">
+            <h2>Intervals</h2>
+            <button id="add-interval" type="button">Add interval</button>
+          </div>
+          <p id="empty-intervals" class="card empty">Add an interval to set a practice duration.</p>
+          <p id="reorder-instructions" class="visually-hidden">Drag to reorder, or use the Up and Down arrow keys.</p>
+          <p id="reorder-status" class="visually-hidden" role="status"></p>
+          <ol id="intervals" class="intervals"></ol>
+          <div class="actions">
+            <button id="delete-template" class="end" type="button" disabled>Delete template</button>
+            <button id="save-definition" type="submit" value="save">Save template</button>
+            <button class="primary" type="submit" value="start">Start session</button>
+          </div>
+        </form>
+      </div>
+      <div id="running" hidden>
+        <h1 id="running-name" class="practice-heading"></h1>
+        <p id="running-instrument" class="muted"></p>
+        <label class="practice-date">Practice date <input id="practice-date" type="date" required></label>
+        <div class="card clock-card">
+          <p id="interval-progress" class="muted"></p>
+          <h2 id="current-interval"></h2>
+          <div id="clock" class="clock" role="timer" aria-live="off"></div>
+          <p class="elapsed">Total elapsed <span id="elapsed-clock" role="timer" aria-live="off"></span></p>
+          <p id="clock-status" class="muted" aria-live="polite"></p>
+          <div class="clock-controls">
+            <button type="button" data-action="previous">Previous</button>
+            <button type="button" class="primary" data-action="toggle">Pause</button>
+            <button type="button" data-action="next">Next</button>
+          </div>
+        </div>
+        <div class="heading section-heading">
+          <h2>Intervals</h2>
+          <div class="interval-actions">
+            <button id="edit-description" type="button">Edit description</button>
+            <button id="add-run-interval" type="button">Add interval</button>
+          </div>
+        </div>
+        <ol id="run-intervals" class="records"></ol>
+        <div class="actions">
+          <button class="end" type="button" data-action="end">End session</button>
+        </div>
+      </div>
+    </section>
+    <section id="history" hidden>
+      <div id="history-list">
+        <h1>Practice history</h1>
+        <p id="empty-history" class="card empty" hidden>Completed sessions will appear here.</p>
+        <ul id="history-entries" class="records"></ul>
+      </div>
+      <article id="history-detail" hidden>
+        <button id="back-history" type="button">All sessions</button>
+        <h1 id="detail-name"></h1>
+        <p id="detail-date" class="muted"></p>
+        <p id="detail-instrument" class="muted"></p>
+        <p id="detail-description" class="description"></p>
+        <div class="card total"><span>Total practice time</span><strong id="detail-total"></strong></div>
+        <h2 class="section-heading">Intervals</h2>
+        <ol id="detail-intervals" class="records"></ol>
+      </article>
+    </section>
+  </main>
+
+  <dialog id="delete-dialog" aria-labelledby="delete-title" aria-describedby="delete-question">
+    <form id="delete-form">
+      <h2 id="delete-title">Delete template?</h2>
+      <p id="delete-question"></p>
+      <p id="delete-error" class="notice" role="status" hidden></p>
+      <div class="actions">
+        <button type="button" data-close autofocus>Cancel</button>
+        <button id="confirm-delete" type="submit" class="end">Delete template</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="name-dialog" aria-labelledby="name-title">
+    <form id="name-form">
+      <h2 id="name-title">Save template</h2>
+      <label>Template name <input id="template-name" required maxlength="120"></label>
+      <p id="overwrite-note" class="muted" hidden>Saving with this name will replace the existing template.</p>
+      <p id="name-error" class="notice" role="status" hidden></p>
+      <div class="actions">
+        <button type="button" data-close>Cancel</button>
+        <button id="confirm-name" type="submit" class="primary">Save template</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="description-dialog" aria-labelledby="description-title">
+    <form id="description-form">
+      <h2 id="description-title">Edit interval description</h2>
+      <label>Description <textarea id="interval-description" maxlength="500" rows="3"></textarea></label>
+      <div class="actions">
+        <button type="button" data-close>Cancel</button>
+        <button type="submit" class="primary">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="add-interval-dialog" aria-labelledby="add-interval-title">
+    <form id="add-interval-form">
+      <h2 id="add-interval-title">Add interval</h2>
+      <label>Minutes <input name="minutes" class="minutes" type="text" inputmode="numeric" pattern="[0-9]+" required></label>
+      <label>Description <span class="optional">(optional)</span>
+        <input name="description" maxlength="500">
+      </label>
+      <div class="actions">
+        <button type="button" data-close>Cancel</button>
+        <button type="submit" class="primary">Continue</button>
+      </div>
+    </form>
+  </dialog>
+
+  <template id="interval-fields">
+    <li class="card interval-fields">
+      <button type="button" class="drag-handle" aria-label="Reorder interval" aria-describedby="reorder-instructions"></button>
+      <label>Minutes <input class="minutes" type="text" inputmode="numeric" pattern="[0-9]+" required></label>
+      <label>Description <span class="optional">(optional)</span>
+        <input class="interval-description" maxlength="500" placeholder="e.g. Long tones">
+      </label>
+      <button type="button" class="remove" aria-label="Remove interval"></button>
+    </li>
+  </template>
+</body>
+</html>
