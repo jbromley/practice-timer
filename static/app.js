@@ -11,6 +11,8 @@ const dateFormat = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", tim
 let templates = [];
 let selectedTemplate = null;
 let run = null;
+let audioContext;
+let intervalChime;
 let clockOffset = 0;
 let pendingName = null;
 let busy = false;
@@ -387,6 +389,40 @@ function setBusy(value) {
   }
 }
 
+function scheduleIntervalChime() {
+  const deadline = run && run.running_since !== null
+    ? run.running_since + run.definition.intervals[run.index].minutes * 60000 - run.elapsed_ms[run.index]
+    : null;
+  if (intervalChime && intervalChime.deadline === deadline) return;
+  intervalChime?.notes.forEach((note) => note.stop());
+  intervalChime = null;
+
+  const delay = deadline === null ? 0 : (deadline - Date.now() - clockOffset) / 1000;
+  if (delay <= 0 || audioContext?.state !== "running") return;
+  const start = audioContext.currentTime + delay;
+  const notes = [659.25, 880, 1046.5].map((frequency, index) => {
+    const time = start + index * 0.14;
+    const note = audioContext.createOscillator();
+    const envelope = audioContext.createGain();
+    note.type = "triangle";
+    note.frequency.value = frequency;
+    envelope.gain.setValueAtTime(0, time);
+    envelope.gain.linearRampToValueAtTime(0.14, time + 0.015);
+    envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
+    note.connect(envelope).connect(audioContext.destination);
+    note.start(time);
+    note.stop(time + 0.32);
+    return note;
+  });
+  intervalChime = { deadline, notes };
+}
+
+function enableIntervalAudio() {
+  if (!window.AudioContext || audioContext?.state === "running") return;
+  audioContext ??= new AudioContext();
+  audioContext.resume().then(scheduleIntervalChime).catch(() => {});
+}
+
 function tick() {
   if (!run || $("running").hidden || $("practice").hidden) return;
   const runningMs = run.running_since === null ? 0 : Math.max(0, Date.now() + clockOffset - run.running_since);
@@ -407,6 +443,7 @@ function tick() {
 function applyRun(state) {
   run = state.run;
   clockOffset = state.now - Date.now();
+  scheduleIntervalChime();
   $("setup").hidden = Boolean(run);
   $("running").hidden = !run;
   if (run) {
@@ -517,6 +554,8 @@ async function openDetail(id) {
   }
 }
 
+document.addEventListener("click", enableIntervalAudio, { capture: true });
+document.addEventListener("keydown", enableIntervalAudio, { capture: true });
 setupDurationFields(sessionForm);
 setupDurationFields($("add-interval-form"));
 sessionForm.addEventListener("input", (event) => {
