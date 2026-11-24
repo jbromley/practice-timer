@@ -196,6 +196,21 @@ main.shell { padding-block: clamp(1.25rem, 5vw, 3rem) 3rem; }
 .records small { display: block; color: var(--muted); font-size: .875rem; font-weight: 400; }
 .measure { flex-shrink: 0; font-variant-numeric: tabular-nums; text-align: right; }
 #history-list > h1, #history-detail > button { margin-bottom: 1rem; }
+.history-summary { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: .8rem; margin-bottom: .65rem; }
+#history-instrument {
+  display: block;
+  max-width: 100%;
+  min-height: 2.75rem;
+  margin-top: .35rem;
+  padding: .5rem;
+  font: inherit;
+  color: inherit;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: .55rem;
+}
+.history-summary > label { min-width: 0; }
+.history-total output { display: block; font-weight: 700; font-variant-numeric: tabular-nums; }
 #detail-date, .description, .total { margin-top: .65rem; }
 .description { white-space: pre-wrap; overflow-wrap: anywhere; }
 .notice { background: var(--surface); border: 1px solid var(--accent); padding: .65rem .85rem; border-radius: .6rem; margin-bottom: 1rem; }

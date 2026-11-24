@@ -13,10 +13,13 @@ let selectedTemplate = null;
 let run = null;
 let audioContext;
 let intervalChime;
+let screenLock;
+let requestingScreenLock = false;
 let clockOffset = 0;
 let pendingName = null;
 let busy = false;
 let historyRequest = 0;
+let historyEntries = [];
 
 async function api(path, body) {
   const response = await fetch("/api/" + path, body === undefined ? {} : {
@@ -423,6 +426,33 @@ function enableIntervalAudio() {
   audioContext.resume().then(scheduleIntervalChime).catch(() => {});
 }
 
+function shouldKeepScreenAwake() {
+  return run && run.running_since !== null && !$("practice").hidden
+    && document.visibilityState === "visible";
+}
+
+async function updateScreenLock() {
+  if (!navigator.wakeLock) return;
+  try {
+    if (!shouldKeepScreenAwake()) {
+      const lock = screenLock;
+      screenLock = null;
+      if (lock && !lock.released) await lock.release();
+    } else if ((!screenLock || screenLock.released) && !requestingScreenLock) {
+      requestingScreenLock = true;
+      try {
+        const lock = await navigator.wakeLock.request("screen");
+        if (shouldKeepScreenAwake()) screenLock = lock;
+        else await lock.release();
+      } finally {
+        requestingScreenLock = false;
+      }
+    }
+  } catch {
+    // The browser or device can deny a wake lock.
+  }
+}
+
 function tick() {
   if (!run || $("running").hidden || $("practice").hidden) return;
   const runningMs = run.running_since === null ? 0 : Math.max(0, Date.now() + clockOffset - run.running_since);
@@ -474,6 +504,7 @@ function applyRun(state) {
   }
   setBusy(busy);
   tick();
+  void updateScreenLock();
 }
 
 async function start(data, templateName, save) {
@@ -511,6 +542,7 @@ function showTab(tab) {
   }
   message();
   tick();
+  void updateScreenLock();
 }
 
 async function openHistory() {
@@ -521,14 +553,30 @@ async function openHistory() {
   try {
     const entries = await api("history");
     if (request !== historyRequest) return;
-    $("empty-history").hidden = entries.length > 0;
-    $("history-entries").replaceChildren(...entries.map((entry) => record(
-      entry.name, dateFormat.format(new Date(entry.practiced_on)),
-      duration(Math.floor(entry.total_ms / 1000)), () => openDetail(entry.id),
-    )));
+    historyEntries = entries;
+    const filter = $("history-instrument");
+    const selected = filter.value;
+    const instruments = [...new Set(entries.map((entry) => entry.instrument).filter(Boolean))]
+      .sort((a, b) => a.localeCompare(b));
+    filter.replaceChildren(new Option("All instruments", ""),
+      ...instruments.map((instrument) => new Option(instrument, instrument)));
+    filter.value = instruments.includes(selected) ? selected : "";
+    renderHistory();
   } catch (error) {
     if (request === historyRequest) message(error.message);
   }
+}
+
+function renderHistory() {
+  const instrument = $("history-instrument").value;
+  const entries = instrument ? historyEntries.filter((entry) => entry.instrument === instrument) : historyEntries;
+  const totalMs = entries.reduce((total, entry) => total + entry.total_ms, 0);
+  $("history-total").value = duration(Math.floor(totalMs / 1000));
+  $("empty-history").hidden = entries.length > 0;
+  $("history-entries").replaceChildren(...entries.map((entry) => record(
+    entry.name, [dateFormat.format(new Date(entry.practiced_on)), entry.instrument].filter(Boolean).join(" · "),
+    duration(Math.floor(entry.total_ms / 1000)), () => openDetail(entry.id),
+  )));
 }
 
 async function openDetail(id) {
@@ -568,6 +616,7 @@ setupIntervalReordering(runIntervals, (index, target) =>
 $("practice-tab").addEventListener("click", () => showTab("practice"));
 $("history-tab").addEventListener("click", openHistory);
 $("back-history").addEventListener("click", openHistory);
+$("history-instrument").addEventListener("change", renderHistory);
 $("template-name").addEventListener("input", showOverwrite);
 for (const button of document.querySelectorAll("[data-close]")) {
   button.addEventListener("click", () => button.closest("dialog").close());
@@ -779,8 +828,12 @@ try {
   applyRun(await api("active"));
   $("practice").hidden = false;
   tick();
+  void updateScreenLock();
 } catch (error) {
   message(error.message);
 }
 setInterval(tick, 150);
-document.addEventListener("visibilitychange", tick);
+document.addEventListener("visibilitychange", () => {
+  tick();
+  void updateScreenLock();
+});

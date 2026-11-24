@@ -14,6 +14,8 @@ Open `http://localhost:8000` on the host computer. On your phone, connect to the
 
 The app has no login and is intended for use on a trusted home network. Keep it off the public internet.
 
+The running timer can keep the screen awake in browsers that support Screen Wake Lock. On a phone, access the app through trusted HTTPS, such as a local HTTPS reverse proxy. A plain HTTP address on your home network cannot use the browser's wake lock.
+
 The default database is `practice.sqlite3` beside `app.py`. Use `--db PATH` to choose another database file or `--port PORT` to change the port.
 
 ## Query practice data

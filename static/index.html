@@ -103,11 +103,22 @@
     <section id="history" hidden>
       <div id="history-list">
         <h1>Practice history</h1>
+        <div class="card history-summary">
+          <label>Instrument
+            <select id="history-instrument">
+              <option value="">All instruments</option>
+            </select>
+          </label>
+          <div class="history-total">
+            <label for="history-total">Total practice time</label>
+            <output id="history-total">0:00</output>
+          </div>
+        </div>
         <p id="empty-history" class="card empty" hidden>Completed sessions will appear here.</p>
         <ul id="history-entries" class="records"></ul>
       </div>
       <article id="history-detail" hidden>
-        <button id="back-history" type="button">All sessions</button>
+        <button id="back-history" type="button">Back to history</button>
         <h1 id="detail-name"></h1>
         <p id="detail-date" class="muted"></p>
         <p id="detail-instrument" class="muted"></p>

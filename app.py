@@ -189,7 +189,7 @@ def read_api(db, path):
         return {"run": read_active(db), "now": now_ms()}
     if path == "/api/history":
         rows = db.execute(
-            """SELECT s.id, s.practiced_on, s.name,
+            """SELECT s.id, s.practiced_on, s.name, s.instrument,
                       COALESCE((SELECT SUM(elapsed_ms) FROM session_intervals WHERE session_id = s.id), 0)
                     + COALESCE((SELECT SUM(elapsed_ms) FROM removed_session_intervals WHERE session_id = s.id), 0)
                       AS total_ms
