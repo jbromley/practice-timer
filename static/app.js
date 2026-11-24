@@ -400,20 +400,20 @@ function scheduleIntervalChime() {
   const delay = deadline === null ? 0 : (deadline - Date.now() - clockOffset) / 1000;
   if (delay <= 0 || audioContext?.state !== "running") return;
   const start = audioContext.currentTime + delay;
-  const notes = [659.25, 880, 1046.5].map((frequency, index) => {
-    const time = start + index * 0.14;
+  const notes = [0, 0.8].flatMap((repeatDelay) => [659.25, 880, 1046.5].map((frequency, index) => {
+    const time = start + repeatDelay + index * 0.14;
     const note = audioContext.createOscillator();
     const envelope = audioContext.createGain();
     note.type = "triangle";
     note.frequency.value = frequency;
     envelope.gain.setValueAtTime(0, time);
-    envelope.gain.linearRampToValueAtTime(0.14, time + 0.015);
+    envelope.gain.linearRampToValueAtTime(0.28, time + 0.015);
     envelope.gain.exponentialRampToValueAtTime(0.001, time + 0.3);
     note.connect(envelope).connect(audioContext.destination);
     note.start(time);
     note.stop(time + 0.32);
     return note;
-  });
+  }));
   intervalChime = { deadline, notes };
 }
 
