@@ -8,15 +8,24 @@ from pathlib import Path
 import sqlite3
 import time
 from urllib.parse import urlsplit
+from zipimport import zipimporter
 
 
 ROOT = Path(__file__).resolve().parent
+DATA_DIR = Path(__loader__.archive).resolve().parent if isinstance(__loader__, zipimporter) else ROOT
 ASSETS = {
     "/": ("index.html", "text/html"),
     "/app.js": ("app.js", "text/javascript"),
     "/style.css": ("style.css", "text/css"),
+    "/favicon.svg": ("favicon.svg", "image/svg+xml"),
 }
 SCHEMA = ROOT / "schema.sql"
+
+
+def read_resource(path):
+    if isinstance(__loader__, zipimporter):
+        return __loader__.get_data(str(path))
+    return path.read_bytes()
 
 
 class RequestError(Exception):
@@ -426,7 +435,7 @@ def initialize_database(path):
             db.execute("ALTER TABLE templates ADD COLUMN created_on TEXT")
         if legacy_instruments:
             db.execute("ALTER TABLE instruments RENAME TO legacy_instruments")
-        for statement in SCHEMA.read_text().split(";"):
+        for statement in read_resource(SCHEMA).decode("utf-8").split(";"):
             if statement.strip():
                 db.execute(statement)
         if legacy:
@@ -470,7 +479,7 @@ class Handler(BaseHTTPRequestHandler):
         path = urlsplit(self.path).path
         if path in ASSETS:
             filename, content_type = ASSETS[path]
-            self.send_data(HTTPStatus.OK, (ROOT / "static" / filename).read_bytes(), content_type)
+            self.send_data(HTTPStatus.OK, read_resource(ROOT / "static" / filename), content_type)
         else:
             self.handle_api(path)
 
@@ -509,7 +518,7 @@ def main():
     parser = argparse.ArgumentParser(description="Run Practice Timer.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8000)
-    parser.add_argument("--db", type=Path, default=ROOT / "practice.sqlite3")
+    parser.add_argument("--db", type=Path, default=DATA_DIR / "practice.sqlite3")
     args = parser.parse_args()
     initialize_database(args.db)
     with ThreadingHTTPServer((args.host, args.port), Handler) as server:

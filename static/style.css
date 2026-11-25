@@ -11,6 +11,7 @@
   --muted: #595959;
   --accent: #0031a9;
   --danger: #a60000;
+  --green: #006800;
 }
 
 :root[data-theme="dark"] {
@@ -23,6 +24,7 @@
   --muted: #989898;
   --accent: #2fafff;
   --danger: #ff5f59;
+  --green: #44bc44;
 }
 
 * { box-sizing: border-box; }
@@ -125,13 +127,24 @@ main.shell { padding-block: clamp(1.25rem, 5vw, 3rem) 3rem; }
   gap: .5rem;
   padding: .45rem .6rem;
 }
-.drag-handle, .remove {
+.icon-button, .drag-handle, .remove {
   display: grid;
   place-items: center;
   width: 2.75rem;
   height: 2.75rem;
   padding: 0;
 }
+.icon-button svg {
+  width: 1.25rem;
+  height: 1.25rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon-button .play-icon { fill: currentColor; stroke: none; }
+#add-interval { color: var(--green); border-color: var(--green); }
 .drag-handle { cursor: grab; touch-action: none; user-select: none; }
 .drag-handle:active { cursor: grabbing; }
 .drag-handle::before {
@@ -164,6 +177,9 @@ main.shell { padding-block: clamp(1.25rem, 5vw, 3rem) 3rem; }
 .interval-actions { display: flex; flex-wrap: wrap; gap: .45rem; }
 .empty { color: var(--muted); }
 .actions { justify-content: flex-end; flex-wrap: wrap; margin-top: 1rem; }
+.template-actions { margin-top: 0; }
+.plan-actions { justify-content: space-between; margin-top: 0; }
+#intervals:not(:empty) + .plan-actions { margin-top: .55rem; }
 .clock-card { margin-top: .8rem; padding: 1.2rem .85rem; text-align: center; }
 .clock-card h2 { margin-top: .25rem; overflow-wrap: anywhere; }
 .clock { font-size: clamp(3rem, 13vw, 6rem); font-weight: 750; font-variant-numeric: tabular-nums; line-height: 1.15; margin-block: .35rem; letter-spacing: -.035em; }

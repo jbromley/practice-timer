@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Practice Timer</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="stylesheet" href="/style.css">
   <script type="module" src="/app.js"></script>
 </head>
@@ -32,7 +33,7 @@
               <label for="session-name">Session name</label>
               <div class="combo-control">
                 <input id="session-name" required maxlength="120" autocomplete="off" placeholder="e.g. Evening practice">
-                <button type="button" popovertarget="template-choices" aria-label="Show session templates"></button>
+                <button type="button" popovertarget="template-choices" aria-label="Show session templates" title="Show session templates"></button>
               </div>
               <div id="template-choices" class="choices" popover aria-label="Session templates"></div>
             </div>
@@ -40,7 +41,7 @@
               <label for="instrument">Instrument</label>
               <div class="combo-control">
                 <input id="instrument" required maxlength="120" autocomplete="off" placeholder="e.g. Saxophone">
-                <button type="button" popovertarget="instrument-choices" aria-label="Show saved instruments"></button>
+                <button type="button" popovertarget="instrument-choices" aria-label="Show saved instruments" title="Show saved instruments"></button>
               </div>
               <div id="instrument-choices" class="choices" popover aria-label="Saved instruments"></div>
             </div>
@@ -55,19 +56,26 @@
               </div>
               <p id="template-created" class="muted">Creation data N/A</p>
             </div>
+            <div class="actions template-actions">
+              <button id="delete-template" class="icon-button end" type="button" aria-label="Delete template" title="Delete template" disabled>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 10v7m4-7v7"/></svg>
+              </button>
+              <button id="save-definition" class="icon-button" type="submit" value="save" aria-label="Save template" title="Save template">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h13l3 3v13H4zM8 4v6h8V4M8 20v-6h8v6"/></svg>
+              </button>
+            </div>
           </div>
-          <div class="heading section-heading">
-            <h2>Intervals</h2>
-            <button id="add-interval" type="button">Add interval</button>
-          </div>
-          <p id="empty-intervals" class="card empty">Add an interval to set a practice duration.</p>
+          <h2 class="section-heading">Intervals</h2>
           <p id="reorder-instructions" class="visually-hidden">Drag to reorder, or use the Up and Down arrow keys.</p>
           <p id="reorder-status" class="visually-hidden" role="status"></p>
           <ol id="intervals" class="intervals"></ol>
-          <div class="actions">
-            <button id="delete-template" class="end" type="button" disabled>Delete template</button>
-            <button id="save-definition" type="submit" value="save">Save template</button>
-            <button class="primary" type="submit" value="start">Start session</button>
+          <div class="actions plan-actions">
+            <button id="add-interval" class="icon-button" type="button" aria-label="Add interval" title="Add interval">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+            </button>
+            <button id="start-session" class="icon-button primary" type="submit" value="start" aria-label="Start session" title="Start session" disabled>
+              <svg class="play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4 20 12 8 20Z"/></svg>
+            </button>
           </div>
         </form>
       </div>
@@ -180,12 +188,12 @@
 
   <template id="interval-fields">
     <li class="card interval-fields">
-      <button type="button" class="drag-handle" aria-label="Reorder interval" aria-describedby="reorder-instructions"></button>
+      <button type="button" class="drag-handle" aria-label="Reorder interval" aria-describedby="reorder-instructions" title="Reorder interval"></button>
       <label>Minutes <input class="minutes" type="text" inputmode="numeric" pattern="[0-9]+" required></label>
       <label>Description <span class="optional">(optional)</span>
         <input class="interval-description" maxlength="500" placeholder="e.g. Long tones">
       </label>
-      <button type="button" class="remove" aria-label="Remove interval"></button>
+      <button type="button" class="remove" aria-label="Remove interval" title="Remove interval"></button>
     </li>
   </template>
 </body>

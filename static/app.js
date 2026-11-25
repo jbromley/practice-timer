@@ -100,9 +100,16 @@ function record(title, subtitle, time, onClick) {
 
 function refreshIntervalFields() {
   const count = $("intervals").children.length;
-  $("empty-intervals").hidden = count > 0;
   $("add-interval").disabled = count >= 200;
   updatePlannedTotal();
+  updateStartButton();
+}
+
+function updateStartButton() {
+  $("start-session").disabled = busy
+    || !$("session-name").value.trim()
+    || !$("instrument").value.trim()
+    || $("intervals").children.length === 0;
 }
 
 function updatePlannedTotal() {
@@ -376,7 +383,7 @@ function setBusy(value) {
   $("save-definition").disabled = value;
   $("delete-template").disabled = value || !selectedTemplate;
   $("confirm-delete").disabled = value;
-  sessionForm.querySelector(".primary").disabled = value;
+  updateStartButton();
   $("edit-description").disabled = value;
   practiceDate.disabled = value;
   const count = run?.elapsed_ms.length ?? 0;
@@ -608,6 +615,7 @@ setupDurationFields(sessionForm);
 setupDurationFields($("add-interval-form"));
 sessionForm.addEventListener("input", (event) => {
   if (event.target.matches(".minutes")) updatePlannedTotal();
+  updateStartButton();
 });
 $("add-interval").addEventListener("click", () => addInterval(undefined, true));
 setupIntervalReordering($("intervals"));
@@ -628,7 +636,10 @@ setupChoices("session-name", "template-choices", async () => {
 }, useTemplate);
 setupChoices("instrument", "instrument-choices", async () =>
   (await api("instruments")).map((name) => ({ name })),
-({ name }) => { $("instrument").value = name; });
+({ name }) => {
+  $("instrument").value = name;
+  updateStartButton();
+});
 
 const themeToggle = $("theme-toggle");
 function setTheme(dark) {
