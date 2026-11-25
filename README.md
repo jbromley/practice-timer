@@ -2,6 +2,12 @@
 
 A personal music-practice timer with reusable templates and SQLite history. It uses Python 3.10 or later and runs without third-party packages.
 
+## Run as a single file
+
+Run `python3 build.py` to create `practice-timer.pyz`. Start it with `./practice-timer.pyz`. The archive includes the server, page, assets, and database schema. It requires Python 3.10 or later.
+
+The archive uses `practice.sqlite3` beside itself. Keep the archive in the project directory to continue using the existing database, or pass `--db /path/to/practice.sqlite3` after moving it elsewhere. With your existing Caddy configuration, the archive listens on `127.0.0.1:8000` by default.
+
 ## Run at home
 
 Start the server from this directory.
